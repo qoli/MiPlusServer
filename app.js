@@ -7,15 +7,18 @@ var db = new Store("data", {
   type: 'single'
 });
 
+var ping = 0;
+
 app.use(express.static('static'));
 app.use(function(req, res, next) {
   console.log("");
-  console.log('> Time:', Date.now());
-  console.log("> req.originalUrl:", req.originalUrl);
+  console.log('Time:', Date.now());
   next();
 });
 
 io.sockets.on('connection', function(socket) {
+  console.log("");
+  console.log(">>> Connected");
   socket.emit('new', {
     welcome: 'connection'
   });
@@ -24,11 +27,25 @@ io.sockets.on('connection', function(socket) {
     obj['android'] = data
     var id = db.saveSync("device", obj);
     console.log("");
-    console.log("> Socket:");
-    console.log(data);
-    console.log("");
+    console.log("Socket:");
+    console.log("> " + data);
   });
+  socket.on('disconnect', function() {
+    console.log("");
+    console.log(">>> Disconnected");
+  });
+  socket.on("Pong", function(d) {
+    console.log("Socket: ");
+    console.log("> on Pong ..." + d);
+  })
 });
+
+setInterval(function() {
+  ping++;
+  io.sockets.emit('Ping', Date.now());
+  console.log("");
+  console.log("> Send Ping ... " + ping);
+}, 15000);
 
 app.get('/', function(req, res) {
   res.json('MiPLus Server.')
@@ -62,11 +79,11 @@ app.get('/sync/:name/:status', function userIdHandler(req, res) {
 
   console.log("Sync...");
   console.log("> Device: " + req.params.name);
-  console.log("> FROM: " + obj[req.params.name]);
-  console.log("> TO: " + req.params.status);
+  console.log("> Status: " + obj[req.params.name] + " => " + req.params.status);
 
   obj[req.params.name] = req.params.status
-  res.json('Set: ' + db.saveSync("device", obj));
+  db.saveSync("device", obj);
+  res.json('Set: ' + obj[req.params.name] + " => " + req.params.status);
 
 });
 

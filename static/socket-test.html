@@ -1,6 +1,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
 <script>
-  var socket = io.connect('http://localhost:3002');
+  var socket = io.connect('http://192.168.1.104:3002');
   socket.on('new', function (data) {
     console.log(data);
   });
