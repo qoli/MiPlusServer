@@ -1,0 +1,38 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    link(href='//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css', rel='stylesheet')
+    link(rel='stylesheet', href='assets/animate.min.css')
+    link(rel='stylesheet', href='assets/style.css')
+    title Setting
+  body
+    
+    .pull-left
+      h1 編輯配置檔
+      span.model.desc
+        i.fa.fa-terminal
+        |   / MiPlusServer.js /  
+        b.animated.animated2.infinite.fadeIn Setting
+    .clearfix
+    hr
+    .animated.fadeInLeft
+      .row
+        .col-md-6
+          .contentBox
+            form(action='/setting', method='post')
+              br
+              .form-group
+                label(for='room') 所在房間名稱
+                input#room.form-control(type='text', name='room', placeholder='房間名稱')
+                p.help-block 為了便於由 MiHomePlus 識別，請把需要處理的設備分配在相同的房間，並且不要超過一個屏幕的設備。
+              .form-group
+                label(for='device') 設備名稱
+                input#device.form-control(type='text', name='device', placeholder='設備名稱;設備名稱', value='')
+                p.help-block 設備名稱必須與米家中所顯示的名字一樣，多個設備使用 ";" 半角分號分開。
+              hr
+              button.btn.btn-default(type='submit') 保存
+    
+    #FooterJS
+    script(src='//cdn.bootcss.com/jquery/3.2.1/jquery.js')
+    script(src='//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js')

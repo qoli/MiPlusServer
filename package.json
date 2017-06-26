@@ -6,6 +6,10 @@
   "dependencies": {
     "express": "^4.15.3",
     "jfs": "^0.2.6",
+    "moment": "^2.18.1",
+    "node-telegram-bot-api": "^0.27.1",
+    "pug": "^2.0.0-rc.2",
+    "simple-xmpp": "^1.3.0",
     "socket.io": "^2.0.3"
   },
   "devDependencies": {},

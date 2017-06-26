@@ -1,21 +1,45 @@
+// app 定義
 const express = require('express')
 const app = express()
 var server = require('http').Server(app);
 var io = require('socket.io').listen(app.listen(3002));
 var Store = require("jfs");
-var db = new Store("data", {
+var moment = require('moment');
+
+var db = new Store("_data", {
   type: 'single'
 });
 
+const config = require('config.js')
+
 var ping = 0;
+var pong = 0;
+
+// TelegramBot 定義
+const TelegramBot = require('node-telegram-bot-api');
+const token = config.token;
+const bot = new TelegramBot(token, {
+  polling: true
+});
+
+// 管理員 ID
+const adminChatID = config.adminChatID;
+
+bot.sendMessage(adminChatID, "MiPlusServer online \r\non Date: " + now());
+
+console.log('MiPlusServer, listening on *:3002');
+
 
 // 允許靜態目錄
 app.use(express.static('static'));
 
+app.set('views', './views');
+app.set('view engine', 'pug');
+
 // 美化日誌
 app.use(function(req, res, next) {
   console.log("");
-  console.log('Time:', Date.now());
+  console.log('Time:', now());
   console.log("URL:", req.originalUrl);
   next();
 });
@@ -38,6 +62,8 @@ io.sockets.on('connection', function(socket) {
     console.log("");
     console.log("Socket:");
     console.log("> " + data);
+
+    bot.sendMessage(adminChatID, data);
   });
 
   // 當斷線
@@ -49,6 +75,7 @@ io.sockets.on('connection', function(socket) {
   // Pong
   socket.on("Pong", function(d) {
     console.log("> on Pong ... " + d);
+    pong = d;
   })
 });
 
@@ -58,7 +85,8 @@ setInterval(function() {
   io.sockets.emit('Ping', Date.now());
   console.log("");
   console.log("> Send Ping ... " + ping);
-}, 20000);
+}, 50000);
+
 
 /**
  * 首頁
@@ -111,6 +139,38 @@ app.get('/sync/:name/:status', function userIdHandler(req, res) {
   db.saveSync("device", obj);
   res.json('Set: ' + obj[req.params.name] + " => " + req.params.status);
 
+  // bot.sendMessage(adminChatID, "> Device: " + req.params.name + ', >Set: ' + obj[req.params.name] + " => " + req.params.status);
+
 });
 
-console.log('MiPlusServer, listening on *:3002');
+
+bot.on('message', (msg) => {
+  const chatId = msg.chat.id;
+
+  var obj = db.getSync("device");
+
+  bot.sendMessage(chatId, now() + '\r\nMiPlusServer on nanoPi \r\n\r\n# Send Ping ' + ping + " ／ Reply " + pong + '\r\n\r\nLast Message: ' + obj['android'])
+});
+
+app.get('/setting', function(req, res) {
+  var setting = db.getSync("setting");
+  res.render('setting', {
+    title: 'Hey',
+    message: 'Hello there!'
+  })
+})
+
+app.post('/setting', function(req, res) {
+
+  setting = {
+    room: '',
+    devices: ''
+  }
+  db.saveSync("device", setting);
+  res.redirect("/setting");
+})
+
+
+function now() {
+  return moment().format('MMMM Do YYYY, h:mm:ss a');
+}
