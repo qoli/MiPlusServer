@@ -24,11 +24,11 @@ html
               br
               .form-group
                 label(for='room') 所在房間名稱
-                input#room.form-control(type='text', name='room', placeholder='房間名稱')
+                input#room.form-control(type='text', name='room', placeholder='房間名稱',value=room)
                 p.help-block 為了便於由 MiHomePlus 識別，請把需要處理的設備分配在相同的房間，並且不要超過一個屏幕的設備。
               .form-group
                 label(for='device') 設備名稱
-                input#device.form-control(type='text', name='device', placeholder='設備名稱;設備名稱', value='')
+                input#device.form-control(type='text', name='devices', placeholder='設備名稱;設備名稱', value=devices)
                 p.help-block 設備名稱必須與米家中所顯示的名字一樣，多個設備使用 ";" 半角分號分開。
               hr
               button.btn.btn-default(type='submit') 保存

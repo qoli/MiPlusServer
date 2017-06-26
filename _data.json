@@ -1,0 +1,13 @@
+{
+  "device": {
+    "android": "MiHomePlus ONLINE",
+    "空調伴侶": "OFF",
+    "電腦燈": "ON",
+    "落地燈": "OFF",
+    "客廳空氣淨化器": "ON"
+  },
+  "setting": {
+    "room": "252",
+    "devices": ""
+  }
+}

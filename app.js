@@ -1,37 +1,43 @@
 // app 定義
 const express = require('express')
 const app = express()
+const TelegramBot = require('node-telegram-bot-api');
+const config = require('./config.js')
+
 var server = require('http').Server(app);
 var io = require('socket.io').listen(app.listen(3002));
 var Store = require("jfs");
 var moment = require('moment');
+var bodyParser = require('body-parser');
+
 
 var db = new Store("_data", {
   type: 'single'
 });
 
-const config = require('config.js')
-
+var adminChatID = 0;
+var token = null;
+var bot = null;
 var ping = 0;
 var pong = 0;
 
 // TelegramBot 定義
 if (config.tgbot) {
-  const TelegramBot = require('node-telegram-bot-api');
-  const token = config.token;
-  const bot = new TelegramBot(token, {
+
+  token = config.token;
+  bot = new TelegramBot(token, {
     polling: true
   });
 
   // 管理員 ID
-  const adminChatID = config.adminChatID;
+  adminChatID = config.adminChatID;
   bot.sendMessage(adminChatID, "MiPlusServer online \r\non Date: " + now());
 
   // 設定 bot 接受指令
   bot.on('message', (msg) => {
     const chatId = msg.chat.id;
 
-    switch (msg) {
+    switch (msg.text) {
       case "id":
         bot.sendMessage(chatId, chatId);
         break;
@@ -45,6 +51,10 @@ if (config.tgbot) {
 
 console.log('MiPlusServer, listening on *:3002');
 
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({
+  extended: true
+})); // support encoded bodies
 
 // 允許靜態目錄
 app.use(express.static('static'));
@@ -161,26 +171,46 @@ app.get('/sync/:name/:status', function userIdHandler(req, res) {
 });
 
 app.get('/setting', function(req, res) {
-  var setting = db.getSync("setting");
+  var settingDB = db.getSync("setting");
+  var room = ""
+  var devices = ""
+
+  console.log("Load Setting DB:");
+  console.log(settingDB);
+
+  if (settingDB.hasOwnProperty('room')) {
+    room = settingDB.room
+    devices = settingDB.devices
+  }
+
   res.render('setting', {
-    title: 'Hey',
-    message: 'Hello there!'
+    room: room,
+    devices: devices
   })
 })
 
 app.post('/setting', function(req, res) {
 
+  console.log("POST:");
+  console.log(req.body);
+
   setting = {
-    room: '',
-    devices: ''
+    room: req.body.room,
+    devices: req.body.devices
   }
-  db.saveSync("device", setting);
+  db.saveSync("setting", setting);
 
   if (config.tgbot) {
-    bot.sendMessage(chatId, "更新配置檔")
+    bot.sendMessage(adminChatID, "Setting 更新配置檔")
   }
 
   res.redirect("/setting");
+})
+
+app.get('/getSetting', function(req, res) {
+
+  var settingDB = db.getSync("setting");
+  res.json(settingDB);
 })
 
 

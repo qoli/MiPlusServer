@@ -1,7 +1,6 @@
-
-      # Please note that this is a beta-feature and will only work with local-to-remote sync!
-      # For example, the following patterns will be ignored on sync:
-      .ftpconfig
-      .DS_Store
-      _data.json
-      node_modules
+# Please note that this is a beta-feature and will only work with local-to-remote sync!
+# For example, the following patterns will be ignored on sync:
+.ftpconfig
+.DS_Store
+_data.json
+node_modules
