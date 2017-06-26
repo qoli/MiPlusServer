@@ -16,16 +16,32 @@ var ping = 0;
 var pong = 0;
 
 // TelegramBot 定義
-const TelegramBot = require('node-telegram-bot-api');
-const token = config.token;
-const bot = new TelegramBot(token, {
-  polling: true
-});
+if (config.tgbot) {
+  const TelegramBot = require('node-telegram-bot-api');
+  const token = config.token;
+  const bot = new TelegramBot(token, {
+    polling: true
+  });
 
-// 管理員 ID
-const adminChatID = config.adminChatID;
+  // 管理員 ID
+  const adminChatID = config.adminChatID;
+  bot.sendMessage(adminChatID, "MiPlusServer online \r\non Date: " + now());
 
-bot.sendMessage(adminChatID, "MiPlusServer online \r\non Date: " + now());
+  // 設定 bot 接受指令
+  bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+
+    switch (msg) {
+      case "id":
+        bot.sendMessage(chatId, chatId);
+        break;
+      default:
+        var obj = db.getSync("device");
+        bot.sendMessage(chatId, now() + '\r\nMiPlusServer on nanoPi \r\n\r\n# Send Ping ' + ping + " ／ Reply " + pong + '\r\n\r\nLast Message: ' + obj['android'])
+    }
+
+  });
+}
 
 console.log('MiPlusServer, listening on *:3002');
 
@@ -63,7 +79,10 @@ io.sockets.on('connection', function(socket) {
     console.log("Socket:");
     console.log("> " + data);
 
-    bot.sendMessage(adminChatID, data);
+    if (config.tgbot) {
+      bot.sendMessage(adminChatID, data);
+    }
+
   });
 
   // 當斷線
@@ -139,17 +158,6 @@ app.get('/sync/:name/:status', function userIdHandler(req, res) {
   db.saveSync("device", obj);
   res.json('Set: ' + obj[req.params.name] + " => " + req.params.status);
 
-  // bot.sendMessage(adminChatID, "> Device: " + req.params.name + ', >Set: ' + obj[req.params.name] + " => " + req.params.status);
-
-});
-
-
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
-
-  var obj = db.getSync("device");
-
-  bot.sendMessage(chatId, now() + '\r\nMiPlusServer on nanoPi \r\n\r\n# Send Ping ' + ping + " ／ Reply " + pong + '\r\n\r\nLast Message: ' + obj['android'])
 });
 
 app.get('/setting', function(req, res) {
@@ -167,6 +175,11 @@ app.post('/setting', function(req, res) {
     devices: ''
   }
   db.saveSync("device", setting);
+
+  if (config.tgbot) {
+    bot.sendMessage(chatId, "更新配置檔")
+  }
+
   res.redirect("/setting");
 })
 
