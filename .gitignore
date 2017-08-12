@@ -6,3 +6,7 @@ telegramBot.js
 xmppBot.js
 
 config.js
+
+_data.json
+
+.DS_Store
